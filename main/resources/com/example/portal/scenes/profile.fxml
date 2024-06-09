@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<Pane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.Profile">
+  <children>
+    <Pane prefHeight="125.0" prefWidth="1920.0" style="-fx-background-color: #287D38;">
+      <children>
+        <TextField layoutX="1507.0" layoutY="42.0" prefHeight="45.0" prefWidth="240.0" promptText="   Search" style="-fx-background-color: #ffffff; -fx-background-radius: 25;" />
+        <Line endX="-14.0" layoutX="1017.0" layoutY="88.0" startX="-100.0" stroke="#dbd522" strokeWidth="3.0" />
+        <Line endX="100.0" endY="-1.0" layoutX="1364.0" layoutY="25.0" startX="100.0" startY="76.0" stroke="#d9d9d9" strokeWidth="2.0" />
+        <Line endX="100.0" endY="-1.0" layoutX="377.0" layoutY="25.0" startX="100.0" startY="76.0" stroke="#d9d9d9" strokeWidth="2.0" />
+            <Pane fx:id="homeButton" layoutX="51.0" layoutY="25.0">
+               <children>
+              <ImageView fitHeight="79.0" fitWidth="87.0" pickOnBounds="true" preserveRatio="true">
+                <image>
+                  <Image url="@../images/plp.png" />
+                </image>
+              </ImageView>
+              <Hyperlink layoutX="103.0" layoutY="26.0" style="-fx-underline: false;" text="Pamantasan ng Lungsod ng Pasig" textFill="WHITE">
+                <font>
+                  <Font name="Times New Roman Bold" size="19.0" />
+                </font>
+              </Hyperlink>
+               </children>
+            </Pane>
+        <ImageView fx:id="hide" fitHeight="34.0" fitWidth="39.0" layoutX="1783.0" layoutY="49.0" pickOnBounds="true" preserveRatio="true">
+          <image>
+            <Image url="@../images/icons/line.png" />
+          </image>
+        </ImageView>
+        <ImageView fx:id="close" fitHeight="34.0" fitWidth="39.0" layoutX="1849.0" layoutY="49.0" pickOnBounds="true" preserveRatio="true">
+          <image>
+            <Image url="@../images/icons/ekis.png" />
+          </image>
+        </ImageView>
+        <Hyperlink layoutX="917.0" layoutY="41.0" style="-fx-underline: false;" text="Profile" textFill="WHITE">
+          <font>
+            <Font name="System Bold" size="23.0" />
+          </font>
+        </Hyperlink>
+      </children>
+    </Pane>
+    <Pane layoutY="125.0" prefHeight="957.0" prefWidth="478.0" style="-fx-background-color: #287D38;">
+      <children>
+        <ImageView fitHeight="250.0" fitWidth="240.0" layoutX="118.0" layoutY="89.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/icons8-name-64.png" />
+               </image></ImageView>
+        <Text fill="WHITE" layoutX="238.0" layoutY="409.0" strokeType="OUTSIDE" strokeWidth="0.0">
+          <font>
+            <Font size="17.0" />
+          </font>
+        </Text>
+        <Label fx:id="nameDisplayCase" alignment="CENTER" layoutX="26.0" layoutY="354.0" prefHeight="31.0" prefWidth="432.0" style="-fx-text-fill: white;" text="Last Name, First Name M.I.">
+          <font>
+            <Font name="System Bold" size="21.0" />
+          </font>
+        </Label>
+        <Label fx:id="departmentDisplayCase" alignment="CENTER" layoutX="24.0" layoutY="388.0" prefHeight="28.0" prefWidth="415.0" style="-fx-text-fill: white;" text="Department">
+          <font>
+            <Font size="19.0" />
+          </font>
+        </Label>
+        <Label fx:id="employmentDisplayCase" alignment="CENTER" layoutX="42.0" layoutY="427.0" prefHeight="21.0" prefWidth="394.0" style="-fx-text-fill: white;" text="Employment Status">
+          <font>
+            <Font size="15.0" />
+          </font>
+        </Label>
+        <Line endX="240.0" layoutX="180.0" layoutY="854.0" startX="-123.0" stroke="#d9d9d9" />
+        <Line endX="240.0" layoutX="180.0" layoutY="471.0" startX="-123.0" stroke="#d9d9d9" />
+        <Label fx:id="emailDisplayCase" alignment="CENTER" layoutX="35.0" layoutY="496.0" prefHeight="30.0" prefWidth="415.0" style="-fx-text-fill: white;" text="Email">
+          <font>
+            <Font size="20.0" />
+          </font>
+        </Label>
+        <Label fx:id="phoneDisplayCase" alignment="CENTER" layoutX="35.0" layoutY="551.0" prefHeight="30.0" prefWidth="415.0" style="-fx-text-fill: white;" text="Phone no.">
+               <font>
+                  <Font size="20.0" />
+               </font></Label>
+        <Label layoutX="143.0" layoutY="869.0" style="-fx-text-fill: white;" text="Edit your Personal Details" textFill="#e1dbdb">
+          <font>
+            <Font name="System Bold" size="16.0" />
+          </font>
+        </Label>
+      </children>
+    </Pane>
+    <Label layoutX="569.0" layoutY="182.0" text="Attendance Date">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <Label layoutX="953.0" layoutY="179.0" text="Time In:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <Label layoutX="1295.0" layoutY="179.0" text="Time Out:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <Label layoutX="1594.0" layoutY="309.0" text="Date:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <DatePicker layoutX="1619.0" layoutY="358.0" prefHeight="34.0" prefWidth="230.0" />
+    <Label layoutX="1594.0" layoutY="483.0" text="Time In:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <TextField layoutX="1619.0" layoutY="530.0" prefHeight="34.0" prefWidth="230.0" style="-fx-background-color: #D9D9D9;" />
+    <Label layoutX="1597.0" layoutY="640.0" text="Time Out:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <TextField layoutX="1619.0" layoutY="689.0" prefHeight="34.0" prefWidth="230.0" style="-fx-background-color: #D9D9D9;" />
+    <Button layoutX="1797.0" layoutY="580.0" mnemonicParsing="false" style="-fx-background-color: #D9D9D9; -fx-text-fill: black;" text="IN">
+      <font>
+        <Font name="System Bold" size="15.0" />
+      </font>
+    </Button>
+    <Button layoutX="1797.0" layoutY="740.0" mnemonicParsing="false" style="-fx-background-color: #D9D9D9; -fx-text-fill: black;" text="OUT">
+      <font>
+        <Font name="System Bold" size="15.0" />
+      </font>
+    </Button>
+    <Line endX="100.0" fill="#d9d9d9" layoutX="1439.0" layoutY="180.0" startX="100.0" startY="846.0" stroke="#d9d9d9" strokeWidth="2.0" style="-fx-fill: #d9d9d9;" />
+      <TableView layoutX="839.0" layoutY="228.0" prefHeight="333.0" prefWidth="315.0">
+         <columns>
+            <TableColumn prefWidth="314.0" />
+         </columns>
+      </TableView>
+      <TableView layoutX="502.0" layoutY="232.0" prefHeight="667.0" prefWidth="315.0">
+         <columns>
+            <TableColumn prefWidth="314.0" />
+         </columns>
+      </TableView>
+      <TableView layoutX="1191.0" layoutY="231.0" prefHeight="333.0" prefWidth="315.0">
+         <columns>
+            <TableColumn prefWidth="314.0" />
+         </columns>
+      </TableView>
+      <Button layoutX="1021.0" layoutY="652.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="121.0" text="SAVE">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+      </Button>
+      <Button layoutX="1622.0" layoutY="402.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="57.0" text="ADD">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Button>
+      <Button layoutX="1207.0" layoutY="652.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="121.0" text="CANCEL">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+      </Button>
+  </children>
+</Pane>

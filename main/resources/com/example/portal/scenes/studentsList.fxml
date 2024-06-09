@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Point3D?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" style="-fx-background-color: D6CFC7;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.StudentList">
+   <top>
+      <Pane prefHeight="125.0" prefWidth="0.0" style="-fx-background-color: #287D38;" BorderPane.alignment="CENTER">
+         <children>
+            <TextFlow accessibleText="Pamantasan ng Lungsod Pasig" layoutX="122.0" layoutY="31.0" prefHeight="19.0" prefWidth="209.0" />
+            <Pane fx:id="homeButton" layoutX="68.0" layoutY="21.0">
+               <children>
+                  <ImageView fitHeight="79.0" fitWidth="87.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/cropped-logo120_-_Copy-removebg-preview.png" />
+                     </image>
+                  </ImageView>
+                  <Hyperlink layoutX="105.0" layoutY="22.0" prefHeight="39.0" prefWidth="266.0" text="Pamantasan ng Lungsod Pasig" textFill="#fcfcfc">
+                     <font>
+                        <Font name="Times New Roman Bold" size="19.0" />
+                     </font>
+                  </Hyperlink>
+               </children>
+            </Pane>
+            <Hyperlink layoutX="669.0" layoutY="40.0" style="-fx-underline: false;" text="Student List" textFill="#fcfcfc">
+               <font>
+                  <Font name="Arial Bold" size="27.0" />
+               </font>
+            </Hyperlink>
+            <Hyperlink layoutX="1050.0" layoutY="40.0" style="-fx-underline: false;" text="Attendance" textFill="#fafafa">
+               <font>
+                  <Font name="Arial Bold" size="27.0" />
+               </font>
+            </Hyperlink>
+            <TextField layoutX="1396.0" layoutY="37.0" prefHeight="45.0" prefWidth="275.0" promptText="   Search" style="-fx-border-radius: 30; -fx-background-color: WHITE; -fx-background-radius: 25;">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <rotationAxis>
+                  <Point3D x="1.0" y="1.0" z="1.0" />
+               </rotationAxis>
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </TextField>
+            <Line endX="7.0" endY="73.0" layoutX="502.0" layoutY="38.0" startX="7.0" startY="-28.0" stroke="#d9d9d9" strokeWidth="2.0" />
+            <ImageView fx:id="close" fitHeight="30.0" fitWidth="30.0" layoutX="1831.0" layoutY="45.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/ekis.png" />
+               </image>
+            </ImageView>
+            <Line endX="7.0" endY="73.0" layoutX="1350.0" layoutY="37.0" startX="7.0" startY="-28.0" stroke="#d9d9d9" strokeWidth="2.0" />
+            <ImageView fx:id="hide" fitHeight="39.0" fitWidth="42.0" layoutX="1778.0" layoutY="40.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/line.png" />
+               </image>
+            </ImageView>
+            <Line endX="43.0" endY="73.0" layoutX="789.0" layoutY="9.0" startX="-106.0" startY="73.0" stroke="#dbd522" strokeWidth="3.0" />
+         </children>
+      </Pane>
+   </top>
+   <left>
+      <Pane prefHeight="955.0" prefWidth="545.0" style="-fx-background-color: white;" BorderPane.alignment="CENTER">
+         <children>
+            <Text layoutX="121.0" layoutY="331.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student`s Information">
+               <font>
+                  <Font name="System Bold" size="25.0" />
+               </font>
+            </Text>
+            <Line endX="354.0" layoutX="168.0" layoutY="270.0" startX="-153.0" />
+            <Line endX="354.0" layoutX="173.0" layoutY="705.0" startX="-153.0" />
+            <ChoiceBox fx:id="statusONE" layoutX="181.0" layoutY="750.0" prefHeight="35.0" prefWidth="300.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+            <Text layoutX="66.0" layoutY="774.0" strokeType="OUTSIDE" strokeWidth="0.0" text="STATUS:">
+               <font>
+                  <Font size="22.0" />
+               </font>
+            </Text>
+            <Button layoutX="375.0" layoutY="844.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="110.0" style="-fx-background-color: D6CFC7; -fx-border-radius: 25; -fx-background-radius: 25;" text="CANCEL" textOverrun="CLIP">
+               <font>
+                  <Font name="System Bold" size="9.0" />
+               </font>
+            </Button>
+            <Button layoutX="212.0" layoutY="844.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="110.0" style="-fx-background-color: D6CFC7; -fx-border-radius: 25; -fx-background-radius: 25;" text="EDIT" textOverrun="CLIP">
+               <font>
+                  <Font name="System Bold" size="9.0" />
+               </font>
+            </Button>
+            <Button layoutX="53.0" layoutY="844.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="110.0" style="-fx-background-color: D6CFC7; -fx-border-radius: 25; -fx-background-radius: 25;" text="SAVE" textOverrun="CLIP">
+               <font>
+                  <Font name="System Bold" size="9.0" />
+               </font>
+            </Button>
+            <ImageView fitHeight="163.0" fitWidth="166.0" layoutX="177.0" layoutY="370.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/profile-user.png" />
+               </image>
+            </ImageView>
+            <ChoiceBox fx:id="Course" layoutX="96.0" layoutY="39.0" prefHeight="46.0" prefWidth="325.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+            <ChoiceBox fx:id="Year" layoutX="96.0" layoutY="121.0" prefHeight="46.0" prefWidth="325.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+            <ChoiceBox fx:id="Section" layoutX="96.0" layoutY="204.0" prefHeight="46.0" prefWidth="325.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+            <Label layoutX="109.0" layoutY="176.0" prefHeight="21.0" prefWidth="76.0" text="Section" textFill="#287d38">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="109.0" layoutY="93.0" prefHeight="21.0" prefWidth="76.0" text="Year Level" textFill="#287d38">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="109.0" layoutY="14.0" prefHeight="21.0" prefWidth="76.0" text="Course" textFill="#287d38">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Label>
+            <TextField fx:id="studentNameField" layoutX="98.0" layoutY="567.0" prefHeight="43.0" prefWidth="320.0" promptText="Last name, First name M.I">
+               <font>
+                  <Font size="15.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="studentIDField" layoutX="98.0" layoutY="631.0" prefHeight="39.0" prefWidth="199.0" promptText="Student ID">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Button fx:id="addStudentButton" layoutX="325.0" layoutY="632.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="72.0" text="Add">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Button>
+         </children>
+      </Pane>
+   </left>
+   <center>
+      <SplitPane dividerPositions="0.30444282592862343" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <items>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="953.0" prefWidth="505.0" style="-fx-background-color: D6CFC7;">
+               <children>
+                  <Text layoutX="90.0" layoutY="56.0" strokeType="OUTSIDE" strokeWidth="0.0" text="STUDENT LISTS" wrappingWidth="235.0048828125">
+                     <font>
+                        <Font name="Arial Bold" size="30.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="154.0" layoutY="84.0" strokeType="OUTSIDE" strokeWidth="0.0" text="S.Y 2023-2024">
+                     <font>
+                        <Font name="Arial" size="16.0" />
+                     </font>
+                  </Text>
+                  <TableView fx:id="studentTable" layoutX="14.0" layoutY="103.0" prefHeight="819.0" prefWidth="387.0">
+                    <columns>
+                      <TableColumn fx:id="studentID" prefWidth="187.0" text="Student ID" />
+                        <TableColumn fx:id="studentName" prefWidth="199.0" text="Name" />
+                    </columns>
+                  </TableView>
+               </children>
+            </AnchorPane>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="953.0" prefWidth="614.0">
+               <children>
+                  <Text layoutX="51.0" layoutY="181.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Midterms">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="124.0" layoutY="217.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#1">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="241.0" layoutY="217.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#2">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="361.0" layoutY="217.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#3">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="479.0" layoutY="217.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#4">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="693.0" layoutY="189.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TOTAL">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="124.0" layoutY="271.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#1">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="245.0" layoutY="271.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#2">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="365.0" layoutY="271.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#3">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="483.0" layoutY="271.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#4">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="52.0" layoutY="360.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Finals">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="119.0" layoutY="391.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#1">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="236.0" layoutY="391.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#2" wrappingWidth="46.115234375">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="356.0" layoutY="391.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#3">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="474.0" layoutY="391.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#4">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="123.0" layoutY="454.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#1">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="240.0" layoutY="454.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#2">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="360.0" layoutY="453.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#3">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="478.0" layoutY="453.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#4">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <TextField layoutX="596.0" layoutY="457.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="101.0" layoutY="457.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <Label layoutX="166.0" layoutY="561.0" text="Quizzes/Test">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="330.0" layoutY="561.0" prefHeight="27.0" prefWidth="68.0" text="Activity">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="442.0" layoutY="561.0" text="Recitation">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="554.0" layoutY="561.0" text="Attendance">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <GridPane gridLinesVisible="true" layoutX="41.0" layoutY="588.0" prefHeight="238.0" prefWidth="870.0" style="-fx-border-color: black;">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="150.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="186.0" minWidth="10.0" prefWidth="143.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="153.0" minWidth="10.0" prefWidth="119.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="149.0" minWidth="10.0" prefWidth="119.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="149.0" minWidth="10.0" prefWidth="119.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="134.0" minWidth="10.0" prefWidth="134.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="67.0" layoutY="36.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="34.0" layoutY="51.0" text="Finals" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="63.0" layoutY="30.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="53.0" layoutY="36.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="5" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="54.0" layoutY="38.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="2">
+                           <children>
+                              <Label layoutX="61.0" layoutY="34.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="3">
+                           <children>
+                              <Label layoutX="52.0" layoutY="36.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="6">
+                           <children>
+                              <Label layoutX="58.0" layoutY="37.0" style="-fx-font-weight: bold;" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="119.0" prefWidth="143.0" style="-fx-border-color: black;" GridPane.columnIndex="1">
+                           <children>
+                              <Label layoutX="65.0" layoutY="37.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" />
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="6" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="58.0" layoutY="37.0" style="-fx-font-weight: bold;" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane layoutX="631.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;">
+                           <children>
+                              <Label layoutX="23.0" layoutY="51.0" text="Midterms" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="5">
+                           <children>
+                              <Label layoutX="50.0" layoutY="37.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="4">
+                           <children>
+                              <Label layoutX="52.0" layoutY="39.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="4" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="52.0" layoutY="41.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                     </children>
+                  </GridPane>
+                  <Label layoutX="818.0" layoutY="561.0" style="-fx-font-weight: bold;" text="Total">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <TextField layoutX="218.0" layoutY="457.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="338.0" layoutY="458.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="460.0" layoutY="458.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="460.0" layoutY="404.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="338.0" layoutY="404.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="218.0" layoutY="404.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="101.0" layoutY="404.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="106.0" layoutY="276.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="223.0" layoutY="276.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="343.0" layoutY="276.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="461.0" layoutY="276.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="106.0" layoutY="226.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="223.0" layoutY="226.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="343.0" layoutY="226.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="461.0" layoutY="226.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="596.0" layoutY="404.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="601.0" layoutY="276.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="601.0" layoutY="226.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <ChoiceBox fx:id="semester" layoutX="45.0" layoutY="101.0" prefHeight="37.0" prefWidth="242.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+                  <Label layoutX="54.0" layoutY="73.0" prefHeight="21.0" prefWidth="76.0" text="Semester" textFill="#287d38">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <TextField layoutX="461.0" layoutY="322.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <Text layoutX="359.0" layoutY="340.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Midterm Exam">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <TextField layoutX="601.0" layoutY="322.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <Label layoutX="694.0" layoutY="561.0" text="Exam">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <TextField layoutX="460.0" layoutY="501.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <Text layoutX="379.0" layoutY="519.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Final Exam">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <TextField layoutX="596.0" layoutY="501.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <Label layoutX="46.0" layoutY="14.0" style="-fx-font-weight: bold;" text="COURSE">
+                     <font>
+                        <Font size="35.0" />
+                     </font>
+                  </Label>
+               </children>
+            </AnchorPane>
+         </items>
+      </SplitPane>
+   </center>
+</BorderPane>

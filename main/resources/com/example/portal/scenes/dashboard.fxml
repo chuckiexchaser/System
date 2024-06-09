@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="mainPane" prefHeight="285.0" prefWidth="997.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.Dashboard">
+   <children>
+      <HBox prefHeight="125.0" prefWidth="1920.0" style="-fx-background-color: #287d38;">
+         <children>
+            <Pane prefHeight="60.0" prefWidth="1922.0" style="-fx-background-color: #287D38;">
+               <children>
+                  <Separator layoutX="1504.0" layoutY="17.0" orientation="VERTICAL" prefHeight="86.0" prefWidth="3.0" />
+                  <TextField layoutX="1525.0" layoutY="38.0" prefHeight="45.0" prefWidth="240.0" promptText="   Search" style="-fx-background-radius: 25; -fx-border-radius: 20;" />
+                  <ImageView fx:id="close" fitHeight="34.0" fitWidth="39.0" layoutX="1851.0" layoutY="43.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/icons/ekis.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="hide" fitHeight="39.0" fitWidth="42.0" layoutX="1795.0" layoutY="41.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/icons/line.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </Pane>
+         </children>
+      </HBox>
+      <HBox layoutX="-11.0" prefHeight="1094.0" prefWidth="478.0" style="-fx-background-color: #287d38;">
+         <children>
+            <Pane prefHeight="1031.0" prefWidth="478.0" style="-fx-background-color: #287D38;">
+               <children>
+                  <Pane fx:id="homeButton" layoutX="57.0" layoutY="29.0">
+                     <children>
+                        <Label layoutX="107.0" layoutY="28.0" style="-fx-text-fill: white;" text="Pamantasan ng Lungsod ng Pasig" textFill="WHITE" wrapText="true">
+                           <font>
+                              <Font name="Times New Roman Bold" size="19.0" />
+                           </font>
+                        </Label>
+                        <ImageView fitHeight="79.0" fitWidth="87.0" pickOnBounds="true">
+                           <image>
+                              <Image url="@../images/plp.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Pane>
+                  <Label alignment="CENTER" contentDisplay="CENTER" layoutX="26.0" layoutY="897.0" prefHeight="41.0" prefWidth="341.0" text="Hello" textFill="WHITE">
+                     <font>
+                        <Font name="Dubai Regular" size="33.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lastNameLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="98.0" layoutY="897.0" prefHeight="41.0" prefWidth="383.0" text="Name" textFill="#dbd522">
+                     <font>
+                        <Font name="Dubai Regular" size="33.0" />
+                     </font>
+                  </Label>
+                  <Separator layoutX="47.0" layoutY="425.0" prefHeight="0.0" prefWidth="393.0" />
+                  <Separator layoutX="47.0" layoutY="831.0" prefHeight="0.0" prefWidth="393.0" />
+                  <Hyperlink fx:id="profileLink" layoutX="167.0" layoutY="208.0" text="Profile" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+                  <Hyperlink fx:id="attendanceLink" layoutX="125.0" layoutY="306.0" text="Attendance" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+                  <Hyperlink fx:id="classSchedLink" layoutX="109.0" layoutY="664.0" text="Class Schedule" textFill="WHITE">
+                     <font>
+                        <Font name="Arial Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+                  <Hyperlink fx:id="studentListLink" layoutX="125.0" layoutY="550.0" text="Student List" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+                  <Hyperlink layoutX="162.0" layoutY="971.0" text="Log Out" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+               </children>
+            </Pane>
+         </children>
+      </HBox>
+      <Separator layoutX="465.0" layoutY="18.0" orientation="VERTICAL" prefHeight="86.0" prefWidth="6.0" />
+      <Label layoutX="701.0" layoutY="688.0" text="NOTICES">
+         <font>
+            <Font name="Times New Roman Bold" size="33.0" />
+         </font>
+      </Label>
+      <HBox layoutX="1619.0" layoutY="830.0" prefHeight="225.0" prefWidth="283.0">
+         <children>
+            <Pane prefHeight="226.0" prefWidth="286.0" />
+         </children>
+      </HBox>
+      <ImageView fitHeight="43.0" fitWidth="43.0" layoutX="633.0" layoutY="687.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/icons/icons8-megaphone-50.png" />
+         </image>
+      </ImageView>
+      <TableView layoutX="647.0" layoutY="744.0" prefHeight="234.0" prefWidth="1108.0">
+         <columns>
+            <TableColumn prefWidth="230.39990234375" text="Date" />
+            <TableColumn prefWidth="384.800048828125" text="Event" />
+            <TableColumn prefWidth="492.7999267578125" text="Content" />
+         </columns>
+      </TableView>
+      <AnchorPane layoutX="541.0" layoutY="249.0" prefHeight="231.0" prefWidth="456.0" style="-fx-background-color: #4EAF5F; -fx-background-radius: 10;">
+         <children>
+            <ImageView fitHeight="109.0" fitWidth="112.0" layoutX="28.0" layoutY="48.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/icons8-student-64.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="151.0" layoutY="159.0" text="Total of Enrolled Students" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Label>
+            <Label layoutX="394.0" layoutY="12.0" text="0" textFill="WHITE">
+               <font>
+                  <Font size="50.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="1035.0" layoutY="251.0" prefHeight="231.0" prefWidth="379.0" style="-fx-background-color: #368945; -fx-background-radius: 10;">
+         <children>
+            <ImageView fitHeight="109.0" fitWidth="112.0" layoutX="28.0" layoutY="48.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/icons8-done-50.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="123.0" layoutY="163.0" text="Total Presents Student" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Label>
+            <Label layoutX="324.0" layoutY="11.0" text="0" textFill="WHITE">
+               <font>
+                  <Font size="50.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="1450.0" layoutY="252.0" prefHeight="231.0" prefWidth="379.0" style="-fx-background-color: #368945; -fx-background-radius: 10;">
+         <children>
+            <ImageView fitHeight="109.0" fitWidth="112.0" layoutX="28.0" layoutY="48.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/icons8-x-50.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="138.0" layoutY="160.0" text="Total Absent Student" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Label>
+            <Label layoutX="336.0" layoutY="8.0" text="0" textFill="WHITE">
+               <font>
+                  <Font size="50.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
