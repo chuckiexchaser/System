@@ -1,0 +1,2898 @@
+// ========================================================== JAVA ================================================================== //
+
+// Attendance
+
+package com.example.portal;
+
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class Attendance implements Initializable {
+   @FXML
+   private Label welcomeText;
+   @FXML private ImageView close;
+   @FXML private ImageView hide;
+   @FXML private BorderPane mainPane;
+
+   @FXML
+   protected void onHelloButtonClick() {
+      welcomeText.setText("Welcome to JavaFX Application!");
+   }
+
+   @FXML
+   private ChoiceBox<String> course;
+   private String[] courses = {"BSIT","BSCE","BSA", "BSN","BSCS","BSBA","BSE","BSP"};
+
+   @FXML
+   private ChoiceBox<String> yearlevel;
+   private String[] year = {"1st Year", "2nd Year", "3rd Year", "4th Year"};
+
+   @FXML
+   private ChoiceBox<String> section;
+   private String[] sec = {"A", "B","C","D","E"};
+
+   @FXML private Pane homeButton;
+
+   @FXML
+   private void imageView(ActionEvent event) {
+      Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+      stage.close();
+   }
+
+   private void stage() {
+   }
+
+   @Override
+   public void initialize(URL url, ResourceBundle resourceBundle) {
+
+      course.getItems().addAll(courses);
+      yearlevel.getItems().addAll(year);
+      section.getItems().addAll(sec);
+
+      Platform.runLater(() -> {
+
+         Stage stage = (Stage) mainPane.getScene().getWindow();
+
+         close.setOnMouseClicked(event -> {
+            stage.close();
+         });
+         hide.setOnMouseClicked(event -> {
+            stage.setIconified(true);
+         });
+
+         homeButton.setOnMouseClicked(_ -> {
+            switchToSecondaryScene();
+         });
+      });
+   }
+
+   private void switchToSecondaryScene() {
+      try {
+         FXMLLoader loader = new FXMLLoader(getClass().getResource("scenes/dashboard.fxml"));
+         Scene scene = new Scene(loader.load());
+
+         Stage stage = (Stage) homeButton.getScene().getWindow();
+         stage.setScene(scene);
+         stage.setFullScreen(true);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+}
+
+// Controller
+
+package com.example.portal;
+
+import javafx.animation.AnimationTimer;
+import javafx.animation.FadeTransition;
+import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+
+import java.io.IOException;
+import java.net.URL;
+import java.sql.*;
+import java.util.ResourceBundle;
+
+import static jdk.net.Sockets.setOption;
+
+public class Controller implements Initializable {
+
+   private static final String URL = "jdbc:mysql://localhost:3306/portal_schema";
+   private static final String USER = "root";
+   private static final String PASSWORD = "kyllie12602";
+
+   private final Image hideImage = new Image(String.valueOf(getClass().getResource("images/icons/hide.png")));
+   private final Image viewImage = new Image(String.valueOf(getClass().getResource("images/icons/view.png")));
+
+   ObservableList<String> departmentOptions = FXCollections.observableArrayList(
+           "CAS - College of Arts and Sciences",
+           "CCS - College of Computer Studies",
+           "CIHM - College of International Tourism & Hospitality Management",
+           "CON - College of Nursing",
+           "COE - College of Engineering",
+           "COED - College of Education",
+           "CBA - College of Business & Accountancy"
+   );
+
+   ObservableList<String> employmentStatus = FXCollections.observableArrayList(
+           "Part-Time",
+           "Full-Time"
+   );
+
+   @FXML private AnchorPane mainPane;
+
+   @FXML private AnchorPane bannerPane;
+   @FXML private Pane loginCreateAccountPane, registerHaveAccountPane;
+   @FXML private Hyperlink loginCreateAccountLink,loginHaveAccountLink;
+
+   @FXML private AnchorPane inputPane;
+   @FXML private Pane loginInputPane;
+   @FXML private TextField loginEmailField, loginViewPasswordField;
+   @FXML private PasswordField loginHidePasswordField;
+   @FXML private ImageView loginPasswordState;
+   @FXML private Button loginButton;
+   @FXML private Hyperlink loginResetPasswordLink;
+
+   private boolean isLoginPasswordHidden = true;
+
+   @FXML private Pane registerInputPane;
+   @FXML private TextField registerLastNameField, registerFirstNameField, registerMiddleInitialField, registerPhoneNumberField, registerEmailField, registerViewPasswordField;
+   @FXML private ComboBox registerDepartmentBox, registerEmploymentBox;
+   @FXML private PasswordField registerHidePasswordField;
+   @FXML private ImageView registerPasswordState;
+   @FXML private Button registerButton;
+
+   private boolean isRegisterPasswordHidden = true;
+
+   @FXML private AnchorPane forgotPasswordPane;
+   @FXML private Pane forgotCenterPane;
+   @FXML private TextField forgotEmailField, forgotViewOldPasswordField, forgotViewNewPasswordField;
+   @FXML private PasswordField forgotHideOldPasswordField, forgotHideNewPasswordField;
+   @FXML private ImageView forgotOldPasswordState, forgotNewPasswordState;
+   @FXML private Button resetButton;
+   @FXML private Hyperlink forgotReturnLink;
+
+   private boolean isForgotOldPasswordHidden = true;
+   private boolean isForgotNewPasswordHidden = true;
+
+   @FXML private ImageView closeButton, minimizeButton;
+
+   public static String lastNameDisplay;
+   public static String firstNameDisplay;
+   public static String middleInitialDisplay;
+   public static String phoneNumberDisplay;
+   public static String emailDisplay;
+   public static String departmentDisplay;
+   public static String employmentDisplay;
+
+   @Override
+   public void initialize(URL url, ResourceBundle resourceBundle) {
+
+      Platform.runLater(() -> {
+         Stage stage = (Stage) mainPane.getScene().getWindow();
+
+         Authentication();
+         NavigationHandler();
+         PasswordHandler();
+         WindowHandler(stage);
+
+         setOption(new ComboBox[]{registerDepartmentBox, registerEmploymentBox}, new ObservableList[]{departmentOptions, employmentStatus});
+      });
+   }
+
+   public void setOption(ComboBox<String>[] boxes, ObservableList<String>[] options) {
+      for (int i = 0; i < boxes.length; i++) {
+         boxes[i].setItems(options[i]);
+      }
+   }
+
+   public void Authentication() {
+      loginButton.setOnMouseClicked(_ -> {
+         String email = loginEmailField.getText();
+         String password = String.valueOf(loginHidePasswordField.getText());
+
+         String sql = "SELECT * FROM professors WHERE email = ? AND password = ?";
+
+         try {
+            Connection connect = DriverManager.getConnection(URL, USER, PASSWORD);
+            PreparedStatement statement = connect.prepareStatement(sql);
+
+            statement.setString(1, email);
+            statement.setString(2, password);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+               System.out.println("Login!");
+
+               lastNameDisplay = resultSet.getString("lastName");
+               firstNameDisplay = resultSet.getString("firstName");
+               middleInitialDisplay = resultSet.getString("middleInitial");
+               phoneNumberDisplay = resultSet.getString("phoneNumber");
+               emailDisplay = resultSet.getString("email");
+               departmentDisplay = resultSet.getString("department");
+               employmentDisplay = resultSet.getString("employment");
+
+               switchToSecondaryScene();
+
+            } else {
+               System.out.println("Wrong Credentials!");
+            }
+         } catch (SQLException e) {
+            throw new RuntimeException(e);
+         }
+      });
+
+      registerButton.setOnMouseClicked(_ -> {
+         String lastName = registerLastNameField.getText();
+         String firstName = registerFirstNameField.getText();
+         String middleInitial = registerMiddleInitialField.getText();
+
+         String phoneNumber = registerPhoneNumberField.getText();
+
+         String email = registerEmailField.getText();
+         String password = String.valueOf(registerHidePasswordField.getText());
+
+         String department = (String) registerDepartmentBox.getValue();
+         String employment = (String) registerEmploymentBox.getValue();
+
+         String sql = "INSERT INTO professors (lastName, firstName, middleInitial, phoneNumber, email, password, department, employment) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+         if (lastName.isEmpty() || firstName.isEmpty() || phoneNumber.isEmpty() || email.isEmpty() || password.isEmpty() || department == null || employment == null) {
+            showAlert();
+         } else {
+            try {
+               Connection connect = DriverManager.getConnection(URL, USER, PASSWORD);
+               PreparedStatement statement = connect.prepareStatement(sql);
+
+               statement.setString(1, lastName);
+               statement.setString(2, firstName);
+               statement.setString(3, middleInitial);
+               statement.setString(4, (phoneNumber));
+               statement.setString(5, email);
+               statement.setString(6, password);
+               statement.setString(7, department);
+               statement.setString(8, employment);
+               statement.executeUpdate();
+
+               System.out.println("Succesfull Created an Account!");
+
+            } catch (SQLException e) {
+               throw new RuntimeException(e);
+            }
+         }
+      });
+
+      resetButton.setOnMouseClicked(_ -> {
+         String email = forgotEmailField.getText();
+         String oldPassword = String.valueOf(forgotHideOldPasswordField.getText());
+         String newPassword = String.valueOf(forgotHideNewPasswordField.getText());
+
+         String sqlCompareOld = "SELECT * FROM professors WHERE email = ? AND password = ?";
+         String sqlUpdate = "UPDATE professors SET password = ? WHERE email = ?";
+
+         try {
+            Connection connect = DriverManager.getConnection(URL, USER, PASSWORD);
+            PreparedStatement selectStatement = connect.prepareStatement(sqlCompareOld);
+            PreparedStatement updateStatement = connect.prepareStatement(sqlUpdate);
+
+            selectStatement.setString(1, email);
+            selectStatement.setString(2, oldPassword);
+
+            ResultSet resultSet = selectStatement.executeQuery();
+
+            if (resultSet.next()) {
+               updateStatement.setString(1, newPassword);
+               updateStatement.setString(2, email);
+               updateStatement.executeUpdate();
+
+               System.out.println("Successfully Changed your Password!");
+            } else {
+               System.out.println("Error, email or password does not match within our database!");
+            }
+         } catch (SQLException e) {
+            throw new RuntimeException(e);
+         }
+      });
+   }
+
+   public void NavigationHandler() {
+      loginCreateAccountLink.setOnMouseClicked(_ -> {
+
+         registerInputPane.setVisible(true);
+         registerHaveAccountPane.setVisible(true);
+
+         loginInputPane.setVisible(false);
+         loginCreateAccountPane.setVisible(false);
+
+         forgotPasswordPane.setVisible(false);
+      });
+
+      loginHaveAccountLink.setOnMouseClicked(_ -> {
+
+         loginInputPane.setVisible(true);
+         loginCreateAccountPane.setVisible(true);
+
+         registerInputPane.setVisible(false);
+         registerHaveAccountPane.setVisible(false);
+
+         forgotPasswordPane.setVisible(false);
+      });
+
+      loginResetPasswordLink.setOnMouseClicked(_ -> {
+         forgotPasswordPane.setVisible(true);
+
+         loginInputPane.setVisible(false);
+         loginCreateAccountPane.setVisible(false);
+
+         registerInputPane.setVisible(false);
+         registerHaveAccountPane.setVisible(false);
+
+         bannerPane.setVisible(false);
+      });
+
+      forgotReturnLink.setOnMouseClicked(_ -> {
+
+         loginInputPane.setVisible(true);
+         loginCreateAccountPane.setVisible(true);
+
+         bannerPane.setVisible(true);
+
+         registerInputPane.setVisible(false);
+         registerHaveAccountPane.setVisible(false);
+
+         forgotPasswordPane.setVisible(false);
+      });
+
+   }
+
+   public void PasswordHandler() {
+      // Login
+      loginPasswordState.setOnMouseClicked(_ -> {
+         if (isLoginPasswordHidden) {
+            loginPasswordState.setImage(viewImage);
+
+            loginHidePasswordField.setVisible(false);
+
+            loginViewPasswordField.setText(loginHidePasswordField.getText());
+            loginViewPasswordField.setVisible(true);
+
+            loginViewPasswordField.setOnKeyTyped(_ -> {
+               loginHidePasswordField.setText(loginViewPasswordField.getText());
+            });
+         } else {
+            loginPasswordState.setImage(hideImage);
+
+            loginViewPasswordField.setVisible(false);
+
+            loginHidePasswordField.setText(loginViewPasswordField.getText());
+            loginHidePasswordField.setVisible(true);
+         }
+
+         isLoginPasswordHidden = !isLoginPasswordHidden;
+      });
+
+      // Register
+      registerPasswordState.setOnMouseClicked(_ -> {
+         if (isRegisterPasswordHidden) {
+            registerPasswordState.setImage(viewImage);
+
+            registerHidePasswordField.setVisible(false);
+
+            registerViewPasswordField.setText(registerHidePasswordField.getText());
+            registerViewPasswordField.setVisible(true);
+
+            registerViewPasswordField.setOnKeyTyped(_ -> {
+               registerHidePasswordField.setText(registerViewPasswordField.getText());
+            });
+         } else {
+            registerPasswordState.setImage(hideImage);
+
+            registerViewPasswordField.setVisible(false);
+
+            registerHidePasswordField.setText(registerViewPasswordField.getText());
+            registerHidePasswordField.setVisible(true);
+         }
+
+         isRegisterPasswordHidden = !isRegisterPasswordHidden;
+      });
+
+      // Forgot Password
+      forgotOldPasswordState.setOnMouseClicked(_ -> {
+         if (isForgotOldPasswordHidden) {
+            forgotOldPasswordState.setImage(viewImage);
+
+            forgotHideOldPasswordField.setVisible(false);
+
+            forgotViewOldPasswordField.setText(forgotHideOldPasswordField.getText());
+            forgotViewOldPasswordField.setVisible(true);
+
+            forgotViewOldPasswordField.setOnKeyTyped(_ -> {
+               forgotHideOldPasswordField.setText(forgotViewOldPasswordField.getText());
+            });
+         } else {
+            forgotOldPasswordState.setImage(hideImage);
+
+            forgotViewOldPasswordField.setVisible(false);
+
+            forgotHideOldPasswordField.setText(forgotViewOldPasswordField.getText());
+            forgotHideOldPasswordField.setVisible(true);
+         }
+
+         isForgotOldPasswordHidden = !isForgotOldPasswordHidden;
+      });
+
+      forgotNewPasswordState.setOnMouseClicked(_ -> {
+         if (isForgotNewPasswordHidden) {
+            forgotNewPasswordState.setImage(viewImage);
+
+            forgotHideNewPasswordField.setVisible(false);
+
+            forgotViewNewPasswordField.setText(forgotHideNewPasswordField.getText());
+            forgotViewNewPasswordField.setVisible(true);
+
+            forgotViewNewPasswordField.setOnKeyTyped(_ -> {
+               forgotHideNewPasswordField.setText(forgotViewNewPasswordField.getText());
+            });
+         } else {
+            forgotNewPasswordState.setImage(hideImage);
+
+            forgotViewNewPasswordField.setVisible(false);
+
+            forgotHideNewPasswordField.setText(forgotViewNewPasswordField.getText());
+            forgotHideNewPasswordField.setVisible(true);
+         }
+
+         isForgotNewPasswordHidden = !isForgotNewPasswordHidden;
+      });
+   }
+
+   public void WindowHandler(Stage stage) {
+      closeButton.setOnMouseClicked(_ -> {
+         stage.close();
+      });
+
+      minimizeButton.setOnMouseClicked(_ -> {
+         stage.setIconified(true);
+      });
+   }
+
+   private void switchToSecondaryScene() {
+      try {
+         FXMLLoader loader = new FXMLLoader(getClass().getResource("scenes/dashboard.fxml"));
+         Scene secondaryScene = new Scene(loader.load());
+
+         Stage stage = (Stage) loginButton.getScene().getWindow();
+         stage.setScene(secondaryScene);
+         stage.setFullScreen(true);
+      } catch (IOException e) {
+         e.printStackTrace();
+         showAlert();
+      }
+   }
+
+   private void showAlert() {
+      Alert alert = new Alert(Alert.AlertType.WARNING);
+      alert.setTitle("ERROR");
+      alert.setHeaderText("MISSING INPUTS OR ERROR");
+      alert.setContentText("You either have missing inputs or have input wrong credentials");
+      alert.showAndWait();
+   }
+
+}
+
+// Dashboard
+
+package com.example.portal;
+
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.URL;
+import java.sql.*;
+import java.util.ResourceBundle;
+
+public class Dashboard implements Initializable {
+   @FXML private AnchorPane mainPane;
+
+   @FXML private Label lastNameLabel;
+   @FXML private ImageView close, hide;
+   @FXML private Hyperlink studentListLink;
+
+   @FXML private Hyperlink profileLink, attendanceLink, classSchedLink;
+
+   String home = "scenes/dashboard.fxml";
+   String profileScene = "scenes/profile.fxml";
+   String studentScene = "scenes/studentsList.fxml";
+   String attendanceScene = "scenes/attendance.fxml";
+   String schedScene = "scenes/schedule.fxml";
+
+   @Override
+   public void initialize(URL url, ResourceBundle resourceBundle) {
+      Platform.runLater(() -> {
+
+         Stage stage = (Stage) mainPane.getScene().getWindow();
+
+
+         close.setOnMouseClicked(_ -> {
+            stage.close();
+         });
+
+         hide.setOnMouseClicked(_ -> {
+            stage.setIconified(true);
+         });
+
+
+         lastNameLabel.setText(Controller.lastNameDisplay);
+
+         studentListLink.setOnMouseClicked(_ -> {
+            System.out.println("Hello");
+
+            switchToSecondaryScene(studentScene, studentListLink);
+         });
+
+         profileLink.setOnMouseClicked(_ -> {
+            switchToSecondaryScene(profileScene, profileLink);
+         });
+
+         attendanceLink.setOnMouseClicked(_ -> {
+            switchToSecondaryScene(attendanceScene, attendanceLink);
+         });
+
+         classSchedLink.setOnMouseClicked(_ -> {
+            switchToSecondaryScene(schedScene, classSchedLink);
+         });
+      });
+   }
+
+   private void switchToSecondaryScene(String FXMLScene, Node targetNode) {
+      try {
+         FXMLLoader loader = new FXMLLoader(getClass().getResource(FXMLScene));
+         Scene scene = new Scene(loader.load());
+
+         Stage stage = (Stage) targetNode.getScene().getWindow();
+         stage.setScene(scene);
+         stage.setFullScreen(true);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+}
+
+// Main
+
+package com.example.portal;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+
+import java.io.IOException;
+
+public class Main extends Application {
+    @Override
+    public void start(Stage stage) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("scenes/authentication.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.setTitle("Hello!");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        launch();
+    }
+}
+
+// Profile
+
+package com.example.portal;
+
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class Profile implements Initializable {
+
+   @FXML private Pane mainPane;
+   @FXML private Label nameDisplayCase, departmentDisplayCase, employmentDisplayCase, emailDisplayCase, phoneDisplayCase;
+
+   @FXML private ImageView close, hide;
+   @FXML private Pane homeButton;
+
+   @Override
+   public void initialize(URL url, ResourceBundle resourceBundle) {
+      Platform.runLater(() -> {
+         Stage stage = (Stage) mainPane.getScene().getWindow();
+
+
+         close.setOnMouseClicked(_ -> {
+            stage.close();
+         });
+
+         hide.setOnMouseClicked(_ -> {
+            stage.setIconified(true);
+         });
+
+         homeButton.setOnMouseClicked(_ -> {
+            switchToSecondaryScene();
+         });
+
+         nameDisplayCase.setText(Controller.lastNameDisplay + ", " + Controller.firstNameDisplay + ", " + Controller.middleInitialDisplay);
+         departmentDisplayCase.setText(Controller.departmentDisplay);
+         employmentDisplayCase.setText(Controller.employmentDisplay);
+
+         emailDisplayCase.setText(Controller.emailDisplay);
+         phoneDisplayCase.setText(Controller.phoneNumberDisplay);
+      });
+
+
+   }
+
+   private void switchToSecondaryScene() {
+      try {
+         FXMLLoader loader = new FXMLLoader(getClass().getResource("scenes/dashboard.fxml"));
+         Scene scene = new Scene(loader.load());
+
+         Stage stage = (Stage) homeButton.getScene().getWindow();
+         stage.setScene(scene);
+         stage.setFullScreen(true);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+}
+
+// Schedule
+
+package com.example.portal;
+
+import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Scene;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class Schedule implements Initializable {
+
+   @FXML private Pane homeButton;
+   @FXML private AnchorPane mainPane;
+
+   @FXML private ImageView closebtn, hidebtn;
+
+   @Override
+   public void initialize(URL url, ResourceBundle resourceBundle) {
+
+      Platform.runLater(() -> {
+
+         Stage stage = (Stage) mainPane.getScene().getWindow();
+
+         closebtn.setOnMouseClicked(event -> {
+            stage.close();
+         });
+         hidebtn.setOnMouseClicked(event -> {
+            stage.setIconified(true);
+         });
+
+         homeButton.setOnMouseClicked(_ -> {
+            switchToSecondaryScene();
+         });
+      });
+   }
+
+
+   private void switchToSecondaryScene() {
+      try {
+         FXMLLoader loader = new FXMLLoader(getClass().getResource("scenes/dashboard.fxml"));
+         Scene scene = new Scene(loader.load());
+
+         Stage stage = (Stage) homeButton.getScene().getWindow();
+         stage.setScene(scene);
+         stage.setFullScreen(true);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+}
+
+// Student List
+
+package com.example.portal;
+
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.ResourceBundle;
+
+public class StudentList implements Initializable {
+
+   private static final String URL = "jdbc:mysql://localhost:3306/portal_schema";
+   private static final String USER = "root";
+   private static final String PASSWORD = "kyllie12602";
+
+   @FXML private ImageView close;
+   @FXML private ImageView hide;
+   @FXML private BorderPane mainPane;
+
+   @FXML
+   private ChoiceBox<String> semester;
+   private String[] sem = {"1st", "2nd"};
+   @FXML
+   private ChoiceBox<String> Course;
+   private String[] courses = {"BSIT", "BSCS"};
+   @FXML
+   private ChoiceBox<String> Year;
+   private String[] years = {"1", "2","3","4"};
+   @FXML
+   private ChoiceBox<String> Section;
+   private String[] secs = {"A", "B","C","D","E"};
+   @FXML
+   private ChoiceBox<String> statusONE;
+   private String[] one = {"Passed","Failed"};
+
+   @FXML TableView<Students> studentTable;
+   @FXML TableColumn<Students, String> studentID;
+   @FXML TableColumn<Students, String> studentName;
+
+   @FXML private TextField studentIDField, studentNameField;
+   @FXML private Button addStudentButton;
+   @FXML private Pane homeButton;
+
+   @Override
+   public void initialize(URL url, ResourceBundle resourceBundle) {
+
+      studentID.setCellValueFactory(new PropertyValueFactory<Students, String>("studentID"));
+      studentName.setCellValueFactory(new PropertyValueFactory<Students, String>("studentName"));
+
+      Platform.runLater(() -> {
+         Stage stage = (Stage) mainPane.getScene().getWindow();
+
+         close.setOnMouseClicked(event -> {
+            stage.close();
+         });
+         hide.setOnMouseClicked(event -> {
+            stage.setIconified(true);
+         });
+
+         homeButton.setOnMouseClicked(_ -> {
+            switchToSecondaryScene();
+         });
+
+
+         String sql = "INSERT INTO students (name, studentID, course, yearLevel, section) VALUES (?, ?, ?, ?, ?)";
+
+         Course.getItems().addAll(courses);
+         semester.getItems().addAll(sem);
+         Year.getItems().addAll(years);
+         Section.getItems().addAll(secs);
+         statusONE.getItems().addAll(one);
+
+         addStudentButton.setOnMouseClicked(_ -> {
+            String studentID = studentIDField.getText();
+            String studentName = studentNameField.getText();
+            String course = Course.getValue();
+            String yearLevel = Year.getValue();
+            String section = Section.getValue();
+
+            try {
+               Connection connect = DriverManager.getConnection(URL, USER, PASSWORD);
+               PreparedStatement statement = connect.prepareStatement(sql);
+
+               statement.setString(1, studentName);
+               statement.setString(2, studentID);
+               statement.setString(3, course);
+               statement.setString(4, yearLevel);
+               statement.setString(5, section);
+               statement.executeUpdate();
+
+               addStudent(studentID, studentName, course, yearLevel, section);
+
+            } catch (SQLException e) {
+               throw new RuntimeException(e);
+            }
+         });
+
+      });
+   }
+
+   public void addStudent(String studentID, String studentName, String course, String year, String section) {
+      ObservableList<Students> list = FXCollections.observableArrayList(
+              new Students(studentID, studentName, course, year, section)
+      );
+
+      studentTable.setItems(list);
+   }
+
+   private void switchToSecondaryScene() {
+      try {
+         FXMLLoader loader = new FXMLLoader(getClass().getResource("scenes/dashboard.fxml"));
+         Scene scene = new Scene(loader.load());
+
+         Stage stage = (Stage) homeButton.getScene().getWindow();
+         stage.setScene(scene);
+         stage.setFullScreen(true);
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+
+}
+
+// ========================================================== FXML ================================================================== //
+
+// Attendance
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.Attendance">
+   <top>
+      <AnchorPane prefHeight="60.0" prefWidth="1920.0" style="-fx-background-color: #287D38;" BorderPane.alignment="CENTER">
+         <children>
+            <Pane fx:id="homeButton" layoutX="88.0" layoutY="8.0">
+               <children>
+                  <Label layoutX="51.0" prefHeight="92.0" prefWidth="300.0" text="Pamantasan ng Lungsod ng Pasig" textFill="WHITE">
+                     <font>
+                        <Font name="Times New Roman Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <ImageView fitHeight="51.0" fitWidth="64.0" layoutY="21.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/backgroundLogo.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </Pane>
+            <Line endX="8.4000244140625" endY="0.5999984741210938" layoutX="468.0" layoutY="24.0" opacity="0.71" startX="8.4000244140625" startY="57.400001525878906" stroke="WHITE" strokeWidth="2.0" />
+            <Line endX="69.199951171875" endY="-0.5999984741210938" layoutX="1408.0" layoutY="22.0" opacity="0.59" startX="69.199951171875" startY="55.400001525878906" stroke="WHITE" strokeWidth="2.0" />
+            <Hyperlink layoutX="784.0" layoutY="30.0" text="Student List" textFill="WHITE">
+               <font>
+                  <Font name="Arial Bold" size="27.0" />
+               </font>
+            </Hyperlink>
+            <Hyperlink layoutX="1062.0" layoutY="30.0" text="Attendance" textFill="#fcfcfc">
+               <font>
+                  <Font name="Arial Bold" size="27.0" />
+               </font>
+            </Hyperlink>
+            <TextField layoutX="1506.0" layoutY="26.0" prefHeight="46.0" prefWidth="240.0" promptText="   Search" style="-fx-background-radius: 25;" />
+            <ImageView fx:id="hide" fitHeight="30.0" fitWidth="30.0" layoutX="1805.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/line.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="close" fitHeight="25.0" fitWidth="25.0" layoutX="1854.0" layoutY="38.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/ekis.png" />
+               </image>
+            </ImageView>
+            <Line endX="17.39996337890625" endY="37.93333435058594" layoutX="1051.0" layoutY="35.0" startX="163.1334228515625" startY="37.93333435058594" stroke="#dbd522" strokeWidth="3.0" />
+         </children>
+      </AnchorPane>
+   </top>
+   <left>
+      <AnchorPane prefHeight="934.0" prefWidth="478.0" BorderPane.alignment="CENTER">
+         <children>
+            <ChoiceBox fx:id="course" layoutX="63.0" layoutY="270.0" prefHeight="53.0" prefWidth="330.0" style="-fx-background-radius: 25;" />
+            <ChoiceBox fx:id="yearlevel" layoutX="64.0" layoutY="386.0" prefHeight="53.0" prefWidth="330.0" style="-fx-background-radius: 25;" />
+            <ChoiceBox fx:id="section" layoutX="64.0" layoutY="495.0" prefHeight="53.0" prefWidth="330.0" style="-fx-background-radius: 25;" />
+            <Label layoutX="80.0" layoutY="225.0" text="Course:">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font></Label>
+            <Label layoutX="83.0" layoutY="343.0" text="Year Level:">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font></Label>
+            <Label layoutX="83.0" layoutY="447.0" text="Section:">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font></Label>
+         </children>
+      </AnchorPane>
+   </left>
+   <center>
+      <AnchorPane prefHeight="938.0" prefWidth="1325.0" style="-fx-background-color: #D9D9D9;" BorderPane.alignment="CENTER">
+         <children>
+            <Label layoutX="184.0" layoutY="81.0" prefHeight="18.0" prefWidth="112.0" text=" S.Y. 2023-2024">
+               <font>
+                  <Font name="Arial" size="15.0" />
+               </font>
+            </Label>
+            <Button layoutX="216.0" layoutY="813.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Edit">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <Button layoutX="314.0" layoutY="813.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Cancel" />
+            <Label layoutX="173.0" layoutY="43.0" prefHeight="43.0" prefWidth="154.0" text="Student List" textFill="#050505">
+               <font>
+                  <Font name="Arial Bold" size="25.0" />
+               </font>
+            </Label>
+            <Button layoutX="115.0" layoutY="814.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="75.0" text="Save">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <TextFlow layoutX="28.0" layoutY="112.0" prefHeight="674.0" prefWidth="437.0">
+               <children>
+                  <TableView prefHeight="678.0" prefWidth="439.0">
+                    <columns>
+                      <TableColumn prefWidth="221.0" text="Student ID" />
+                      <TableColumn prefWidth="217.0" text="Name" />
+                    </columns>
+                  </TableView>
+               </children></TextFlow>
+            <DatePicker layoutX="752.0" layoutY="177.0" prefHeight="43.0" prefWidth="346.0" promptText="Date Today" />
+            <Button layoutX="798.0" layoutY="239.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="101.0" style="-fx-background-radius: 10;" text="Present">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Button>
+            <Hyperlink layoutX="806.0" layoutY="98.0" prefHeight="64.0" prefWidth="258.0" text="Attendance" textFill="#287d38">
+               <font>
+                  <Font name="Times New Roman Bold" size="42.0" />
+               </font>
+            </Hyperlink>
+            <Button layoutX="932.0" layoutY="237.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="101.0" style="-fx-background-radius: 10;" text="Absent">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Button>
+            <TableView layoutX="493.0" layoutY="297.0" prefHeight="485.0" prefWidth="868.0">
+              <columns>
+                <TableColumn prefWidth="432.0" text="Present" />
+                <TableColumn prefWidth="435.0" text="Absent" />
+              </columns>
+            </TableView>
+         </children>
+      </AnchorPane>
+   </center>
+</BorderPane>
+
+// Authentication
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.Controller">
+   <children>
+      <AnchorPane fx:id="bannerPane" layoutX="15.0" prefHeight="800.0" prefWidth="512.0" style="-fx-background-color: #287D38;">
+         <children>
+            <Pane fx:id="bannerPaneContent" layoutX="26.0" layoutY="80.0" prefHeight="640.0" prefWidth="460.0">
+               <children>
+                  <ImageView fx:id="bannerImage" fitHeight="200.0" fitWidth="200.0" layoutX="130.0" layoutY="40.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/backgroundLogo.png" />
+                     </image>
+                  </ImageView>
+                  <Label alignment="CENTER" layoutX="10.0" layoutY="260.0" prefHeight="60.0" prefWidth="440.0" text="Pamantasan ng Lungsod ng Pasig" textFill="#dbd522">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+                  <Line endX="220.0" fill="#d9d9d9" layoutX="230.0" layoutY="370.0" startX="-220.0" stroke="#d9d9d9" />
+                  <Pane fx:id="loginCreateAccountPane" layoutX="60.0" layoutY="410.0">
+                     <children>
+                        <Label alignment="CENTER" prefHeight="60.0" prefWidth="340.0" text="Don't have an account?" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <Hyperlink fx:id="loginCreateAccountLink" alignment="CENTER" layoutX="70.0" layoutY="60.0" prefHeight="60.0" prefWidth="200.0" text="Create Account" textFill="#ffde59">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Hyperlink>
+                     </children>
+                  </Pane>
+                  <Pane fx:id="registerHaveAccountPane" layoutX="60.0" layoutY="410.0" visible="false">
+                     <children>
+                        <Label alignment="CENTER" prefHeight="60.0" prefWidth="340.0" text="Already have an account?" textFill="WHITE">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <Hyperlink fx:id="loginHaveAccountLink" alignment="CENTER" layoutX="70.0" layoutY="60.0" prefHeight="60.0" prefWidth="200.0" text="Sign In" textFill="#ffde59">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Hyperlink>
+                     </children>
+                  </Pane>
+               </children>
+            </Pane>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="inputPane" layoutX="527.0" prefHeight="800.0" prefWidth="753.0">
+         <children>
+            <Pane fx:id="loginInputPane" layoutX="47.0" layoutY="70.0" prefHeight="660.0" prefWidth="660.0">
+               <children>
+                  <Label alignment="CENTER" layoutX="140.0" layoutY="20.0" prefHeight="100.0" prefWidth="380.0" text="SIGN IN" textFill="#287d38">
+                     <font>
+                        <Font name="System Bold" size="64.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="loginEmailField" layoutX="110.0" layoutY="210.0" prefHeight="60.0" prefWidth="440.0" promptText="Email" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <Pane fx:id="loginPasswordPane" layoutX="110.0" layoutY="300.0">
+                     <children>
+                        <TextField fx:id="loginViewPasswordField" prefHeight="60.0" prefWidth="440.0" promptText="Password" styleClass="fields" stylesheets="@../designs/style.css" visible="false" />
+                        <PasswordField fx:id="loginHidePasswordField" prefHeight="60.0" prefWidth="440.0" promptText="Password" styleClass="fields" stylesheets="@../designs/style.css" />
+                        <ImageView fx:id="loginPasswordState" fitHeight="32.0" fitWidth="32.0" layoutX="394.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/icons/hide.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                     </children>
+                  </Pane>
+                  <Button fx:id="loginButton" layoutX="210.0" layoutY="440.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="240.0" style="-fx-background-color: #287D38;" styleClass="buttons" stylesheets="@../designs/style.css" text="SIGN IN">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+                  <Hyperlink fx:id="loginResetPasswordLink" alignment="CENTER" layoutX="210.0" layoutY="560.0" prefHeight="60.0" prefWidth="240.0" text="Forgot your password?" textFill="#245d2f">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Hyperlink>
+               </children>
+            </Pane>
+            <Pane fx:id="registerInputPane" layoutX="47.0" layoutY="70.0" prefHeight="660.0" prefWidth="660.0" visible="false">
+               <children>
+                  <Label alignment="CENTER" layoutX="15.0" layoutY="20.0" prefHeight="100.0" prefWidth="630.0" text="CREATE ACCOUNT" textFill="#287d38">
+                     <font>
+                        <Font name="System Bold" size="64.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="15.0" layoutY="120.0" prefHeight="40.0" prefWidth="260.0" text="Personal Information" textFill="#737373">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="registerLastNameField" layoutX="15.0" layoutY="170.0" prefHeight="60.0" prefWidth="260.0" promptText="Last Name" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <TextField fx:id="registerFirstNameField" layoutX="280.0" layoutY="170.0" prefHeight="60.0" prefWidth="260.0" promptText="First Name" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <TextField fx:id="registerMiddleInitialField" layoutX="545.0" layoutY="170.0" prefHeight="60.0" prefWidth="100.0" promptText="M.I" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <TextField fx:id="registerPhoneNumberField" layoutX="15.0" layoutY="240.0" prefHeight="60.0" prefWidth="630.0" promptText="Phone Number" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <TextField fx:id="registerEmailField" layoutX="15.0" layoutY="310.0" prefHeight="60.0" prefWidth="630.0" promptText="Email" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <Pane fx:id="registerPasswordPane" layoutX="15.0" layoutY="380.0">
+                     <children>
+                        <TextField fx:id="registerViewPasswordField" prefHeight="60.0" prefWidth="630.0" promptText="Password" styleClass="fields" stylesheets="@../designs/style.css" visible="false" />
+                        <PasswordField fx:id="registerHidePasswordField" prefHeight="60.0" prefWidth="630.0" promptText="Password" styleClass="fields" stylesheets="@../designs/style.css" />
+                        <ImageView fx:id="registerPasswordState" fitHeight="32.0" fitWidth="32.0" layoutX="584.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/icons/hide.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                     </children>
+                  </Pane>
+                  <Label layoutX="15.0" layoutY="450.0" prefHeight="40.0" prefWidth="300.0" text="School Information" textFill="#737373">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="registerDepartmentBox" layoutX="15.0" layoutY="500.0" prefHeight="60.0" prefWidth="300.0" promptText="Department Program" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <ComboBox fx:id="registerEmploymentBox" layoutX="345.0" layoutY="500.0" prefHeight="60.0" prefWidth="300.0" promptText="Employment Status" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <Button fx:id="registerButton" layoutX="210.0" layoutY="600.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="240.0" style="-fx-background-color: #287D38;" styleClass="buttons" stylesheets="@../designs/style.css" text="SIGN UP">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                  </Button>
+               </children>
+            </Pane>
+         </children>
+      </AnchorPane>
+      <AnchorPane fx:id="forgotPasswordPane" prefHeight="800.0" prefWidth="1280.0" visible="false">
+         <children>
+            <Pane fx:id="forgotTopBorderPane" prefHeight="100.0" prefWidth="1280.0" style="-fx-background-color: #287D38;">
+               <children>
+                  <Label alignment="CENTER" layoutX="370.0" layoutY="20.0" prefHeight="60.0" prefWidth="540.0" text="Pamantasan ng Lungsod ng Pasig" textFill="#dbd522">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Pane fx:id="forgotCenterPane" layoutY="100.0" prefHeight="600.0" prefWidth="1280.0">
+               <children>
+                  <Label alignment="CENTER" layoutX="215.0" layoutY="30.0" prefHeight="100.0" prefWidth="850.0" text="FORGOT PASSWORD" textAlignment="CENTER" textFill="#287d38">
+                     <font>
+                        <Font name="System Bold" size="64.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="forgotEmailField" layoutX="420.0" layoutY="170.0" prefHeight="60.0" prefWidth="440.0" promptText="Email" styleClass="fields" stylesheets="@../designs/style.css" />
+                  <Pane fx:id="forgotOldPasswordPane" layoutX="420.0" layoutY="260.0">
+                     <children>
+                        <TextField fx:id="forgotViewOldPasswordField" prefHeight="60.0" prefWidth="440.0" promptText="Old Password" styleClass="fields" stylesheets="@../designs/style.css" />
+                        <PasswordField fx:id="forgotHideOldPasswordField" prefHeight="60.0" prefWidth="440.0" promptText="Old Password" styleClass="fields" stylesheets="@../designs/style.css" />
+                        <ImageView fx:id="forgotOldPasswordState" fitHeight="32.0" fitWidth="32.0" layoutX="394.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/icons/hide.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                     </children>
+                  </Pane>
+                  <Pane fx:id="forgotNewPasswordPane" layoutX="420.0" layoutY="350.0">
+                     <children>
+                        <TextField fx:id="forgotViewNewPasswordField" prefHeight="60.0" prefWidth="440.0" promptText="New Password" styleClass="fields" stylesheets="@../designs/style.css" />
+                        <PasswordField fx:id="forgotHideNewPasswordField" prefHeight="60.0" prefWidth="440.0" promptText="New Password" styleClass="fields" stylesheets="@../designs/style.css" />
+                        <ImageView fx:id="forgotNewPasswordState" fitHeight="32.0" fitWidth="32.0" layoutX="394.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/icons/hide.png" />
+                           </image>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </ImageView>
+                     </children>
+                  </Pane>
+                  <Button fx:id="resetButton" layoutX="520.0" layoutY="450.0" mnemonicParsing="false" prefHeight="60.0" prefWidth="240.0" styleClass="buttons" stylesheets="@../designs/style.css" text="SUBMIT">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Button>
+                  <Hyperlink fx:id="forgotReturnLink" alignment="CENTER" layoutX="490.0" layoutY="520.0" prefHeight="60.0" prefWidth="300.0" text="Go Back" textFill="#287d38">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Hyperlink>
+               </children>
+            </Pane>
+            <Pane fx:id="forgotBottomBorderPane" layoutY="700.0" prefHeight="100.0" prefWidth="1280.0" style="-fx-background-color: #287D38;" />
+         </children>
+      </AnchorPane>
+      <Pane fx:id="windowHandlerPane" prefHeight="60.0" prefWidth="200.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="15.0">
+         <children>
+            <ImageView fx:id="closeButton" fitHeight="32.0" fitWidth="32.0" layoutX="150.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/close.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+            <ImageView fx:id="minimizeButton" fitHeight="32.0" fitWidth="32.0" layoutX="110.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/minimize.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>
+
+// Dashboard 
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="mainPane" prefHeight="285.0" prefWidth="997.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.Dashboard">
+   <children>
+      <HBox prefHeight="125.0" prefWidth="1920.0" style="-fx-background-color: #287d38;">
+         <children>
+            <Pane prefHeight="60.0" prefWidth="1922.0" style="-fx-background-color: #287D38;">
+               <children>
+                  <Separator layoutX="1504.0" layoutY="17.0" orientation="VERTICAL" prefHeight="86.0" prefWidth="3.0" />
+                  <TextField layoutX="1525.0" layoutY="38.0" prefHeight="45.0" prefWidth="240.0" promptText="   Search" style="-fx-background-radius: 25; -fx-border-radius: 20;" />
+                  <ImageView fx:id="close" fitHeight="34.0" fitWidth="39.0" layoutX="1851.0" layoutY="43.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/icons/ekis.png" />
+                     </image>
+                  </ImageView>
+                  <ImageView fx:id="hide" fitHeight="39.0" fitWidth="42.0" layoutX="1795.0" layoutY="41.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/icons/line.png" />
+                     </image>
+                  </ImageView>
+               </children>
+            </Pane>
+         </children>
+      </HBox>
+      <HBox layoutX="-11.0" prefHeight="1094.0" prefWidth="478.0" style="-fx-background-color: #287d38;">
+         <children>
+            <Pane prefHeight="1031.0" prefWidth="478.0" style="-fx-background-color: #287D38;">
+               <children>
+                  <Pane fx:id="homeButton" layoutX="57.0" layoutY="29.0">
+                     <children>
+                        <Label layoutX="107.0" layoutY="28.0" style="-fx-text-fill: white;" text="Pamantasan ng Lungsod ng Pasig" textFill="WHITE" wrapText="true">
+                           <font>
+                              <Font name="Times New Roman Bold" size="19.0" />
+                           </font>
+                        </Label>
+                        <ImageView fitHeight="79.0" fitWidth="87.0" pickOnBounds="true">
+                           <image>
+                              <Image url="@../images/plp.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Pane>
+                  <Label alignment="CENTER" contentDisplay="CENTER" layoutX="26.0" layoutY="897.0" prefHeight="41.0" prefWidth="341.0" text="Hello" textFill="WHITE">
+                     <font>
+                        <Font name="Dubai Regular" size="33.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="lastNameLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="98.0" layoutY="897.0" prefHeight="41.0" prefWidth="383.0" text="Name" textFill="#dbd522">
+                     <font>
+                        <Font name="Dubai Regular" size="33.0" />
+                     </font>
+                  </Label>
+                  <Separator layoutX="47.0" layoutY="425.0" prefHeight="0.0" prefWidth="393.0" />
+                  <Separator layoutX="47.0" layoutY="831.0" prefHeight="0.0" prefWidth="393.0" />
+                  <Hyperlink fx:id="profileLink" layoutX="167.0" layoutY="208.0" text="Profile" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+                  <Hyperlink fx:id="attendanceLink" layoutX="125.0" layoutY="306.0" text="Attendance" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+                  <Hyperlink fx:id="classSchedLink" layoutX="109.0" layoutY="664.0" text="Class Schedule" textFill="WHITE">
+                     <font>
+                        <Font name="Arial Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+                  <Hyperlink fx:id="studentListLink" layoutX="125.0" layoutY="550.0" text="Student List" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+                  <Hyperlink layoutX="162.0" layoutY="971.0" text="Log Out" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="33.0" />
+                     </font>
+                  </Hyperlink>
+               </children>
+            </Pane>
+         </children>
+      </HBox>
+      <Separator layoutX="465.0" layoutY="18.0" orientation="VERTICAL" prefHeight="86.0" prefWidth="6.0" />
+      <Label layoutX="701.0" layoutY="688.0" text="NOTICES">
+         <font>
+            <Font name="Times New Roman Bold" size="33.0" />
+         </font>
+      </Label>
+      <HBox layoutX="1619.0" layoutY="830.0" prefHeight="225.0" prefWidth="283.0">
+         <children>
+            <Pane prefHeight="226.0" prefWidth="286.0" />
+         </children>
+      </HBox>
+      <ImageView fitHeight="43.0" fitWidth="43.0" layoutX="633.0" layoutY="687.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../images/icons/icons8-megaphone-50.png" />
+         </image>
+      </ImageView>
+      <TableView layoutX="647.0" layoutY="744.0" prefHeight="234.0" prefWidth="1108.0">
+         <columns>
+            <TableColumn prefWidth="230.39990234375" text="Date" />
+            <TableColumn prefWidth="384.800048828125" text="Event" />
+            <TableColumn prefWidth="492.7999267578125" text="Content" />
+         </columns>
+      </TableView>
+      <AnchorPane layoutX="541.0" layoutY="249.0" prefHeight="231.0" prefWidth="456.0" style="-fx-background-color: #4EAF5F; -fx-background-radius: 10;">
+         <children>
+            <ImageView fitHeight="109.0" fitWidth="112.0" layoutX="28.0" layoutY="48.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/icons8-student-64.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="151.0" layoutY="159.0" text="Total of Enrolled Students" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Label>
+            <Label layoutX="394.0" layoutY="12.0" text="0" textFill="WHITE">
+               <font>
+                  <Font size="50.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="1035.0" layoutY="251.0" prefHeight="231.0" prefWidth="379.0" style="-fx-background-color: #368945; -fx-background-radius: 10;">
+         <children>
+            <ImageView fitHeight="109.0" fitWidth="112.0" layoutX="28.0" layoutY="48.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/icons8-done-50.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="123.0" layoutY="163.0" text="Total Presents Student" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Label>
+            <Label layoutX="324.0" layoutY="11.0" text="0" textFill="WHITE">
+               <font>
+                  <Font size="50.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="1450.0" layoutY="252.0" prefHeight="231.0" prefWidth="379.0" style="-fx-background-color: #368945; -fx-background-radius: 10;">
+         <children>
+            <ImageView fitHeight="109.0" fitWidth="112.0" layoutX="28.0" layoutY="48.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/icons8-x-50.png" />
+               </image>
+            </ImageView>
+            <Label layoutX="138.0" layoutY="160.0" text="Total Absent Student" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="21.0" />
+               </font>
+            </Label>
+            <Label layoutX="336.0" layoutY="8.0" text="0" textFill="WHITE">
+               <font>
+                  <Font size="50.0" />
+               </font>
+            </Label>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
+
+// Profile 
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<Pane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.Profile">
+  <children>
+    <Pane prefHeight="125.0" prefWidth="1920.0" style="-fx-background-color: #287D38;">
+      <children>
+        <TextField layoutX="1507.0" layoutY="42.0" prefHeight="45.0" prefWidth="240.0" promptText="   Search" style="-fx-background-color: #ffffff; -fx-background-radius: 25;" />
+        <Line endX="-14.0" layoutX="1017.0" layoutY="88.0" startX="-100.0" stroke="#dbd522" strokeWidth="3.0" />
+        <Line endX="100.0" endY="-1.0" layoutX="1364.0" layoutY="25.0" startX="100.0" startY="76.0" stroke="#d9d9d9" strokeWidth="2.0" />
+        <Line endX="100.0" endY="-1.0" layoutX="377.0" layoutY="25.0" startX="100.0" startY="76.0" stroke="#d9d9d9" strokeWidth="2.0" />
+            <Pane fx:id="homeButton" layoutX="51.0" layoutY="25.0">
+               <children>
+              <ImageView fitHeight="79.0" fitWidth="87.0" pickOnBounds="true" preserveRatio="true">
+                <image>
+                  <Image url="@../images/plp.png" />
+                </image>
+              </ImageView>
+              <Hyperlink layoutX="103.0" layoutY="26.0" style="-fx-underline: false;" text="Pamantasan ng Lungsod ng Pasig" textFill="WHITE">
+                <font>
+                  <Font name="Times New Roman Bold" size="19.0" />
+                </font>
+              </Hyperlink>
+               </children>
+            </Pane>
+        <ImageView fx:id="hide" fitHeight="34.0" fitWidth="39.0" layoutX="1783.0" layoutY="49.0" pickOnBounds="true" preserveRatio="true">
+          <image>
+            <Image url="@../images/icons/line.png" />
+          </image>
+        </ImageView>
+        <ImageView fx:id="close" fitHeight="34.0" fitWidth="39.0" layoutX="1849.0" layoutY="49.0" pickOnBounds="true" preserveRatio="true">
+          <image>
+            <Image url="@../images/icons/ekis.png" />
+          </image>
+        </ImageView>
+        <Hyperlink layoutX="917.0" layoutY="41.0" style="-fx-underline: false;" text="Profile" textFill="WHITE">
+          <font>
+            <Font name="System Bold" size="23.0" />
+          </font>
+        </Hyperlink>
+      </children>
+    </Pane>
+    <Pane layoutY="125.0" prefHeight="957.0" prefWidth="478.0" style="-fx-background-color: #287D38;">
+      <children>
+        <ImageView fitHeight="250.0" fitWidth="240.0" layoutX="118.0" layoutY="89.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/icons/icons8-name-64.png" />
+               </image></ImageView>
+        <Text fill="WHITE" layoutX="238.0" layoutY="409.0" strokeType="OUTSIDE" strokeWidth="0.0">
+          <font>
+            <Font size="17.0" />
+          </font>
+        </Text>
+        <Label fx:id="nameDisplayCase" alignment="CENTER" layoutX="26.0" layoutY="354.0" prefHeight="31.0" prefWidth="432.0" style="-fx-text-fill: white;" text="Last Name, First Name M.I.">
+          <font>
+            <Font name="System Bold" size="21.0" />
+          </font>
+        </Label>
+        <Label fx:id="departmentDisplayCase" alignment="CENTER" layoutX="24.0" layoutY="388.0" prefHeight="28.0" prefWidth="415.0" style="-fx-text-fill: white;" text="Department">
+          <font>
+            <Font size="19.0" />
+          </font>
+        </Label>
+        <Label fx:id="employmentDisplayCase" alignment="CENTER" layoutX="42.0" layoutY="427.0" prefHeight="21.0" prefWidth="394.0" style="-fx-text-fill: white;" text="Employment Status">
+          <font>
+            <Font size="15.0" />
+          </font>
+        </Label>
+        <Line endX="240.0" layoutX="180.0" layoutY="854.0" startX="-123.0" stroke="#d9d9d9" />
+        <Line endX="240.0" layoutX="180.0" layoutY="471.0" startX="-123.0" stroke="#d9d9d9" />
+        <Label fx:id="emailDisplayCase" alignment="CENTER" layoutX="35.0" layoutY="496.0" prefHeight="30.0" prefWidth="415.0" style="-fx-text-fill: white;" text="Email">
+          <font>
+            <Font size="20.0" />
+          </font>
+        </Label>
+        <Label fx:id="phoneDisplayCase" alignment="CENTER" layoutX="35.0" layoutY="551.0" prefHeight="30.0" prefWidth="415.0" style="-fx-text-fill: white;" text="Phone no.">
+               <font>
+                  <Font size="20.0" />
+               </font></Label>
+        <Label layoutX="143.0" layoutY="869.0" style="-fx-text-fill: white;" text="Edit your Personal Details" textFill="#e1dbdb">
+          <font>
+            <Font name="System Bold" size="16.0" />
+          </font>
+        </Label>
+      </children>
+    </Pane>
+    <Label layoutX="569.0" layoutY="182.0" text="Attendance Date">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <Label layoutX="953.0" layoutY="179.0" text="Time In:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <Label layoutX="1295.0" layoutY="179.0" text="Time Out:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <Label layoutX="1594.0" layoutY="309.0" text="Date:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <DatePicker layoutX="1619.0" layoutY="358.0" prefHeight="34.0" prefWidth="230.0" />
+    <Label layoutX="1594.0" layoutY="483.0" text="Time In:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <TextField layoutX="1619.0" layoutY="530.0" prefHeight="34.0" prefWidth="230.0" style="-fx-background-color: #D9D9D9;" />
+    <Label layoutX="1597.0" layoutY="640.0" text="Time Out:">
+      <font>
+        <Font name="System Bold" size="23.0" />
+      </font>
+    </Label>
+    <TextField layoutX="1619.0" layoutY="689.0" prefHeight="34.0" prefWidth="230.0" style="-fx-background-color: #D9D9D9;" />
+    <Button layoutX="1797.0" layoutY="580.0" mnemonicParsing="false" style="-fx-background-color: #D9D9D9; -fx-text-fill: black;" text="IN">
+      <font>
+        <Font name="System Bold" size="15.0" />
+      </font>
+    </Button>
+    <Button layoutX="1797.0" layoutY="740.0" mnemonicParsing="false" style="-fx-background-color: #D9D9D9; -fx-text-fill: black;" text="OUT">
+      <font>
+        <Font name="System Bold" size="15.0" />
+      </font>
+    </Button>
+    <Line endX="100.0" fill="#d9d9d9" layoutX="1439.0" layoutY="180.0" startX="100.0" startY="846.0" stroke="#d9d9d9" strokeWidth="2.0" style="-fx-fill: #d9d9d9;" />
+      <TableView layoutX="839.0" layoutY="228.0" prefHeight="333.0" prefWidth="315.0">
+         <columns>
+            <TableColumn prefWidth="314.0" />
+         </columns>
+      </TableView>
+      <TableView layoutX="502.0" layoutY="232.0" prefHeight="667.0" prefWidth="315.0">
+         <columns>
+            <TableColumn prefWidth="314.0" />
+         </columns>
+      </TableView>
+      <TableView layoutX="1191.0" layoutY="231.0" prefHeight="333.0" prefWidth="315.0">
+         <columns>
+            <TableColumn prefWidth="314.0" />
+         </columns>
+      </TableView>
+      <Button layoutX="1021.0" layoutY="652.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="121.0" text="SAVE">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+      </Button>
+      <Button layoutX="1622.0" layoutY="402.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="57.0" text="ADD">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Button>
+      <Button layoutX="1207.0" layoutY="652.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="121.0" text="CANCEL">
+         <font>
+            <Font name="System Bold" size="15.0" />
+         </font>
+      </Button>
+  </children>
+</Pane>
+
+// Schedule
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.Schedule">
+   <children>
+      <Pane prefHeight="125.0" prefWidth="1920.0" style="-fx-background-color: #287D38;">
+         <children>
+            <Pane fx:id="homeButton" layoutX="52.0" layoutY="25.0">
+               <children>
+                  <ImageView fitHeight="79.0" fitWidth="87.0" pickOnBounds="true">
+                     <image>
+                        <Image url="@../images/backgroundLogo.png" />
+                     </image>
+                  </ImageView>
+                  <Label layoutX="116.0" layoutY="30.0" text="Pamantasan ng Lungsod ng Pasig" textFill="WHITE">
+                     <font>
+                        <Font name="Times New Roman Bold" size="19.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Line endX="100.0" endY="-1.0" layoutX="383.0" layoutY="25.0" startX="100.0" startY="76.0" stroke="#d9d9d9" strokeWidth="2.0" />
+            <Line endX="100.0" endY="-1.0" layoutX="1364.0" layoutY="25.0" startX="100.0" startY="76.0" stroke="#d9d9d9" strokeWidth="2.0" />
+            <Label layoutX="881.0" layoutY="46.0" text="Class Schedule" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="27.0" />
+               </font>
+            </Label>
+            <Line endX="259.0" endY="74.0" layoutX="805.0" layoutY="15.0" startX="76.0" startY="74.0" stroke="#dbd522" strokeWidth="3.0" />
+            <TextField layoutX="1494.0" layoutY="43.0" prefHeight="45.0" prefWidth="240.0" promptText="   Search" style="-fx-background-radius: 25; -fx-border-radius: 20;" />
+            <ImageView fx:id="closebtn" fitHeight="34.0" fitWidth="39.0" layoutX="1842.0" layoutY="49.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/ekis.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="hidebtn" fitHeight="39.0" fitWidth="42.0" layoutX="1780.0" layoutY="45.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/line.png" />
+               </image>
+            </ImageView>
+         </children>
+      </Pane>
+      <Label layoutX="715.0" layoutY="210.0" text="Weekly Class Schedule" textFill="#287d38">
+         <font>
+            <Font name="Times New Roman Bold" size="50.0" />
+         </font>
+      </Label>
+      <GridPane gridLinesVisible="true" layoutX="426.0" layoutY="436.0" prefHeight="526.0" prefWidth="1069.0" style="-fx-background-color: white;">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Pane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="time" layoutX="20.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room" layoutX="20.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec" layoutX="20.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="time1" layoutX="18.0" layoutY="15.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1" layoutX="18.0" layoutY="44.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1" layoutX="18.0" layoutY="72.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+               <children>
+                  <Label fx:id="time11" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room11" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec11" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="2">
+               <children>
+                  <Text fill="#268036" layoutX="25.0" layoutY="30.0" strokeType="OUTSIDE" strokeWidth="0.0" text="2:30 PM - 5:30 PM">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Text>
+                  <Text fill="#268036" layoutX="16.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="CL1 - COMP 103 (Lab)">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Text>
+                  <Text fill="#268036" layoutX="16.0" layoutY="86.0" strokeType="OUTSIDE" strokeWidth="0.0" text="BSIT - 1D">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Text>
+               </children>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="3">
+               <children>
+                  <Label fx:id="time111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="4">
+               <children>
+                  <Label fx:id="time1111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+               <children>
+                  <Label fx:id="time12" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room12" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec12" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+               <children>
+                  <Label fx:id="time121" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room121" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec121" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <children>
+                  <Label fx:id="time1211" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1211" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1211" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <children>
+                  <Label fx:id="time12111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room12111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec12111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="4">
+               <children>
+                  <Label fx:id="time121111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room121111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec121111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+               <children>
+                  <Label fx:id="time122" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room122" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec122" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+               <children>
+                  <Label fx:id="time1221" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1221" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1221" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+               <children>
+                  <Text fill="#268036" layoutX="25.0" layoutY="30.0" strokeType="OUTSIDE" strokeWidth="0.0" text="2:30 PM - 4:30 PM">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Text>
+                  <Text fill="#268036" layoutX="16.0" layoutY="58.0" strokeType="OUTSIDE" strokeWidth="0.0" text="602 - COMP 103 (Lec)">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Text>
+                  <Text fill="#268036" layoutX="16.0" layoutY="86.0" strokeType="OUTSIDE" strokeWidth="0.0" text="BSIT - 1D">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Text>
+               </children>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+               <children>
+                  <Label fx:id="time12211" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room12211" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec12211" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2" GridPane.rowIndex="4">
+               <children>
+                  <Label fx:id="time122111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room122111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec122111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="time122112" layoutX="18.0" layoutY="15.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room122112" layoutX="18.0" layoutY="44.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec122112" layoutX="18.0" layoutY="72.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3">
+               <children>
+                  <Label fx:id="time1221121" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1221121" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1221121" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="1">
+               <children>
+                  <Label fx:id="time12211211" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room12211211" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec12211211" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
+               <children>
+                  <Label fx:id="time122112111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room122112111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec122112111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="3">
+               <children>
+                  <Label fx:id="time1221121111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1221121111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1221121111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="4">
+               <children>
+                  <Label fx:id="time12211211111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room12211211111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec12211211111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4">
+               <children>
+                  <Label fx:id="time122112111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room122112111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec122112111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="1">
+               <children>
+                  <Label fx:id="time1221121111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1221121111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1221121111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="2">
+               <children>
+                  <Label fx:id="time12211211111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room12211211111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec12211211111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="3">
+               <children>
+                  <Label fx:id="time122112111111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room122112111111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec122112111111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4" GridPane.rowIndex="4">
+               <children>
+                  <Label fx:id="time1221121111111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1221121111111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1221121111111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5">
+               <children>
+                  <Label fx:id="time12211211111111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room12211211111111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec12211211111111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="1">
+               <children>
+                  <Label fx:id="time122112111111111111" layoutX="21.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room122112111111111111" layoutX="21.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec122112111111111111" layoutX="21.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="2">
+               <children>
+                  <Label fx:id="time1221121111111111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room1221121111111111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec1221121111111111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="3">
+               <children>
+                  <Label fx:id="time12211211111111111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room12211211111111111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec12211211111111111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children></Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5" GridPane.rowIndex="4">
+               <children>
+                  <Label fx:id="time122112111111111111111" layoutX="18.0" layoutY="14.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="room122112111111111111111" layoutX="18.0" layoutY="43.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="sec122112111111111111111" layoutX="18.0" layoutY="71.0" prefHeight="21.0" prefWidth="143.0" textFill="#268036">
+                     <font>
+                        <Font size="15.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+         </children>
+      </GridPane>
+      <GridPane gridLinesVisible="true" layoutX="426.0" layoutY="338.0" prefHeight="98.0" prefWidth="1069.0" style="-fx-background-color: #268036;">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Pane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Label layoutX="37.0" layoutY="32.0" text="MONDAY" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1">
+               <children>
+                  <Label layoutX="38.0" layoutY="32.0" text="TUESDAY" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="2">
+               <children>
+                  <Label layoutX="18.0" layoutY="32.0" text="WEDNESDAY" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="3">
+               <children>
+                  <Label layoutX="28.0" layoutY="32.0" text="THURSDAY" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="4">
+               <children>
+                  <Label layoutX="48.0" layoutY="32.0" text="FRIDAY" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="5">
+               <children>
+                  <Label layoutX="28.0" layoutY="32.0" text="SATURDAY" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Label>
+               </children>
+            </Pane>
+         </children>
+      </GridPane>
+      <Pane layoutX="41.0" layoutY="527.0" prefHeight="309.0" prefWidth="321.0" style="-fx-background-color: #287D38; -fx-background-radius: 20;">
+         <children>
+            <TextField layoutX="38.0" layoutY="148.0" prefHeight="20.0" prefWidth="216.0" promptText="Time">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </TextField>
+            <TextField layoutX="38.0" layoutY="199.0" prefHeight="20.0" prefWidth="216.0" promptText="Room">
+               <font>
+                  <Font size="15.0" />
+               </font>
+            </TextField>
+            <TextField layoutX="38.0" layoutY="238.0" prefHeight="20.0" prefWidth="216.0" promptText="Program- Year/Section">
+               <font>
+                  <Font size="15.0" />
+               </font>
+            </TextField>
+            <Button layoutX="265.0" layoutY="151.0" mnemonicParsing="false" style="-fx-background-color: #EBE8E8;" text="Add">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <Label layoutX="28.0" layoutY="32.0" text="DAYS" textFill="#fcfcfc">
+               <font>
+                  <Font name="System Bold" size="23.0" />
+               </font>
+            </Label>
+            <ChoiceBox fx:id="day" layoutX="28.0" layoutY="72.0" prefHeight="39.0" prefWidth="266.0" style="-fx-background-radius: 5; -fx-background-color: white;" />
+         </children>
+      </Pane>
+      <Label layoutX="120.0" layoutY="486.0" opacity="0.85" text="Add your Schedule" textFill="#287d38">
+         <font>
+            <Font name="Times New Roman Bold" size="20.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>
+
+// Student List
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Point3D?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="1080.0" prefWidth="1920.0" style="-fx-background-color: D6CFC7;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.portal.StudentList">
+   <top>
+      <Pane prefHeight="125.0" prefWidth="0.0" style="-fx-background-color: #287D38;" BorderPane.alignment="CENTER">
+         <children>
+            <TextFlow accessibleText="Pamantasan ng Lungsod Pasig" layoutX="122.0" layoutY="31.0" prefHeight="19.0" prefWidth="209.0" />
+            <Pane fx:id="homeButton" layoutX="68.0" layoutY="21.0">
+               <children>
+                  <ImageView fitHeight="79.0" fitWidth="87.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/cropped-logo120_-_Copy-removebg-preview.png" />
+                     </image>
+                  </ImageView>
+                  <Hyperlink layoutX="105.0" layoutY="22.0" prefHeight="39.0" prefWidth="266.0" text="Pamantasan ng Lungsod Pasig" textFill="#fcfcfc">
+                     <font>
+                        <Font name="Times New Roman Bold" size="19.0" />
+                     </font>
+                  </Hyperlink>
+               </children>
+            </Pane>
+            <Hyperlink layoutX="669.0" layoutY="40.0" style="-fx-underline: false;" text="Student List" textFill="#fcfcfc">
+               <font>
+                  <Font name="Arial Bold" size="27.0" />
+               </font>
+            </Hyperlink>
+            <Hyperlink layoutX="1050.0" layoutY="40.0" style="-fx-underline: false;" text="Attendance" textFill="#fafafa">
+               <font>
+                  <Font name="Arial Bold" size="27.0" />
+               </font>
+            </Hyperlink>
+            <TextField layoutX="1396.0" layoutY="37.0" prefHeight="45.0" prefWidth="275.0" promptText="   Search" style="-fx-border-radius: 30; -fx-background-color: WHITE; -fx-background-radius: 25;">
+               <opaqueInsets>
+                  <Insets />
+               </opaqueInsets>
+               <rotationAxis>
+                  <Point3D x="1.0" y="1.0" z="1.0" />
+               </rotationAxis>
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </TextField>
+            <Line endX="7.0" endY="73.0" layoutX="502.0" layoutY="38.0" startX="7.0" startY="-28.0" stroke="#d9d9d9" strokeWidth="2.0" />
+            <ImageView fx:id="close" fitHeight="30.0" fitWidth="30.0" layoutX="1831.0" layoutY="45.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/ekis.png" />
+               </image>
+            </ImageView>
+            <Line endX="7.0" endY="73.0" layoutX="1350.0" layoutY="37.0" startX="7.0" startY="-28.0" stroke="#d9d9d9" strokeWidth="2.0" />
+            <ImageView fx:id="hide" fitHeight="39.0" fitWidth="42.0" layoutX="1778.0" layoutY="40.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/line.png" />
+               </image>
+            </ImageView>
+            <Line endX="43.0" endY="73.0" layoutX="789.0" layoutY="9.0" startX="-106.0" startY="73.0" stroke="#dbd522" strokeWidth="3.0" />
+         </children>
+      </Pane>
+   </top>
+   <left>
+      <Pane prefHeight="955.0" prefWidth="545.0" style="-fx-background-color: white;" BorderPane.alignment="CENTER">
+         <children>
+            <Text layoutX="121.0" layoutY="331.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Student`s Information">
+               <font>
+                  <Font name="System Bold" size="25.0" />
+               </font>
+            </Text>
+            <Line endX="354.0" layoutX="168.0" layoutY="270.0" startX="-153.0" />
+            <Line endX="354.0" layoutX="173.0" layoutY="705.0" startX="-153.0" />
+            <ChoiceBox fx:id="statusONE" layoutX="181.0" layoutY="750.0" prefHeight="35.0" prefWidth="300.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+            <Text layoutX="66.0" layoutY="774.0" strokeType="OUTSIDE" strokeWidth="0.0" text="STATUS:">
+               <font>
+                  <Font size="22.0" />
+               </font>
+            </Text>
+            <Button layoutX="375.0" layoutY="844.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="110.0" style="-fx-background-color: D6CFC7; -fx-border-radius: 25; -fx-background-radius: 25;" text="CANCEL" textOverrun="CLIP">
+               <font>
+                  <Font name="System Bold" size="9.0" />
+               </font>
+            </Button>
+            <Button layoutX="212.0" layoutY="844.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="110.0" style="-fx-background-color: D6CFC7; -fx-border-radius: 25; -fx-background-radius: 25;" text="EDIT" textOverrun="CLIP">
+               <font>
+                  <Font name="System Bold" size="9.0" />
+               </font>
+            </Button>
+            <Button layoutX="53.0" layoutY="844.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="110.0" style="-fx-background-color: D6CFC7; -fx-border-radius: 25; -fx-background-radius: 25;" text="SAVE" textOverrun="CLIP">
+               <font>
+                  <Font name="System Bold" size="9.0" />
+               </font>
+            </Button>
+            <ImageView fitHeight="163.0" fitWidth="166.0" layoutX="177.0" layoutY="370.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/profile-user.png" />
+               </image>
+            </ImageView>
+            <ChoiceBox fx:id="Course" layoutX="96.0" layoutY="39.0" prefHeight="46.0" prefWidth="325.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+            <ChoiceBox fx:id="Year" layoutX="96.0" layoutY="121.0" prefHeight="46.0" prefWidth="325.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+            <ChoiceBox fx:id="Section" layoutX="96.0" layoutY="204.0" prefHeight="46.0" prefWidth="325.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+            <Label layoutX="109.0" layoutY="176.0" prefHeight="21.0" prefWidth="76.0" text="Section" textFill="#287d38">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="109.0" layoutY="93.0" prefHeight="21.0" prefWidth="76.0" text="Year Level" textFill="#287d38">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Label>
+            <Label layoutX="109.0" layoutY="14.0" prefHeight="21.0" prefWidth="76.0" text="Course" textFill="#287d38">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+            </Label>
+            <TextField fx:id="studentNameField" layoutX="98.0" layoutY="567.0" prefHeight="43.0" prefWidth="320.0" promptText="Last name, First name M.I">
+               <font>
+                  <Font size="15.0" />
+               </font>
+            </TextField>
+            <TextField fx:id="studentIDField" layoutX="98.0" layoutY="631.0" prefHeight="39.0" prefWidth="199.0" promptText="Student ID">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </TextField>
+            <Button fx:id="addStudentButton" layoutX="325.0" layoutY="632.0" mnemonicParsing="false" prefHeight="32.0" prefWidth="72.0" text="Add">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Button>
+         </children>
+      </Pane>
+   </left>
+   <center>
+      <SplitPane dividerPositions="0.30444282592862343" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <items>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="953.0" prefWidth="505.0" style="-fx-background-color: D6CFC7;">
+               <children>
+                  <Text layoutX="90.0" layoutY="56.0" strokeType="OUTSIDE" strokeWidth="0.0" text="STUDENT LISTS" wrappingWidth="235.0048828125">
+                     <font>
+                        <Font name="Arial Bold" size="30.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="154.0" layoutY="84.0" strokeType="OUTSIDE" strokeWidth="0.0" text="S.Y 2023-2024">
+                     <font>
+                        <Font name="Arial" size="16.0" />
+                     </font>
+                  </Text>
+                  <TableView fx:id="studentTable" layoutX="14.0" layoutY="103.0" prefHeight="819.0" prefWidth="387.0">
+                    <columns>
+                      <TableColumn fx:id="studentID" prefWidth="187.0" text="Student ID" />
+                        <TableColumn fx:id="studentName" prefWidth="199.0" text="Name" />
+                    </columns>
+                  </TableView>
+               </children>
+            </AnchorPane>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="953.0" prefWidth="614.0">
+               <children>
+                  <Text layoutX="51.0" layoutY="181.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Midterms">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="124.0" layoutY="217.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#1">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="241.0" layoutY="217.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#2">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="361.0" layoutY="217.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#3">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="479.0" layoutY="217.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#4">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="693.0" layoutY="189.0" strokeType="OUTSIDE" strokeWidth="0.0" text="TOTAL">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="124.0" layoutY="271.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#1">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="245.0" layoutY="271.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#2">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="365.0" layoutY="271.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#3">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="483.0" layoutY="271.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#4">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="52.0" layoutY="360.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Finals">
+                     <font>
+                        <Font name="System Bold" size="23.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="119.0" layoutY="391.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#1">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="236.0" layoutY="391.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#2" wrappingWidth="46.115234375">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="356.0" layoutY="391.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#3">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="474.0" layoutY="391.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Quiz#4">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="123.0" layoutY="454.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#1">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="240.0" layoutY="454.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#2">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="360.0" layoutY="453.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#3">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <Text layoutX="478.0" layoutY="453.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Act#4">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <TextField layoutX="596.0" layoutY="457.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="101.0" layoutY="457.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <Label layoutX="166.0" layoutY="561.0" text="Quizzes/Test">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="330.0" layoutY="561.0" prefHeight="27.0" prefWidth="68.0" text="Activity">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="442.0" layoutY="561.0" text="Recitation">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="554.0" layoutY="561.0" text="Attendance">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <GridPane gridLinesVisible="true" layoutX="41.0" layoutY="588.0" prefHeight="238.0" prefWidth="870.0" style="-fx-border-color: black;">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="200.0" minWidth="10.0" prefWidth="150.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="186.0" minWidth="10.0" prefWidth="143.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="153.0" minWidth="10.0" prefWidth="119.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="149.0" minWidth="10.0" prefWidth="119.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="149.0" minWidth="10.0" prefWidth="119.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="134.0" minWidth="10.0" prefWidth="134.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="67.0" layoutY="36.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="34.0" layoutY="51.0" text="Finals" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="63.0" layoutY="30.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="53.0" layoutY="36.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="5" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="54.0" layoutY="38.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="2">
+                           <children>
+                              <Label layoutX="61.0" layoutY="34.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="3">
+                           <children>
+                              <Label layoutX="52.0" layoutY="36.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="6">
+                           <children>
+                              <Label layoutX="58.0" layoutY="37.0" style="-fx-font-weight: bold;" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="119.0" prefWidth="143.0" style="-fx-border-color: black;" GridPane.columnIndex="1">
+                           <children>
+                              <Label layoutX="65.0" layoutY="37.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children></AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" />
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="6" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="58.0" layoutY="37.0" style="-fx-font-weight: bold;" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane layoutX="631.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;">
+                           <children>
+                              <Label layoutX="23.0" layoutY="51.0" text="Midterms" />
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="5">
+                           <children>
+                              <Label layoutX="50.0" layoutY="37.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="4">
+                           <children>
+                              <Label layoutX="52.0" layoutY="39.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: black;" GridPane.columnIndex="4" GridPane.rowIndex="1">
+                           <children>
+                              <Label layoutX="52.0" layoutY="41.0" text="0">
+                                 <font>
+                                    <Font size="30.0" />
+                                 </font>
+                              </Label>
+                           </children>
+                        </AnchorPane>
+                     </children>
+                  </GridPane>
+                  <Label layoutX="818.0" layoutY="561.0" style="-fx-font-weight: bold;" text="Total">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <TextField layoutX="218.0" layoutY="457.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="338.0" layoutY="458.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="460.0" layoutY="458.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="460.0" layoutY="404.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="338.0" layoutY="404.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="218.0" layoutY="404.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="101.0" layoutY="404.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="106.0" layoutY="276.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="223.0" layoutY="276.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="343.0" layoutY="276.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="461.0" layoutY="276.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="106.0" layoutY="226.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="223.0" layoutY="226.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="343.0" layoutY="226.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="461.0" layoutY="226.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="596.0" layoutY="404.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="601.0" layoutY="276.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <TextField layoutX="601.0" layoutY="226.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <ChoiceBox fx:id="semester" layoutX="45.0" layoutY="101.0" prefHeight="37.0" prefWidth="242.0" style="-fx-border-radius: 20; -fx-background-radius: 25;" />
+                  <Label layoutX="54.0" layoutY="73.0" prefHeight="21.0" prefWidth="76.0" text="Semester" textFill="#287d38">
+                     <font>
+                        <Font name="System Bold" size="15.0" />
+                     </font>
+                  </Label>
+                  <TextField layoutX="461.0" layoutY="322.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <Text layoutX="359.0" layoutY="340.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Midterm Exam">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <TextField layoutX="601.0" layoutY="322.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <Label layoutX="694.0" layoutY="561.0" text="Exam">
+                     <font>
+                        <Font size="18.0" />
+                     </font>
+                  </Label>
+                  <TextField layoutX="460.0" layoutY="501.0" prefHeight="26.0" prefWidth="83.0" style="-fx-background-color: D6CFC7;" />
+                  <Text layoutX="379.0" layoutY="519.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Final Exam">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Text>
+                  <TextField layoutX="596.0" layoutY="501.0" prefHeight="26.0" prefWidth="232.0" style="-fx-background-color: D6CFC7;" />
+                  <Label layoutX="46.0" layoutY="14.0" style="-fx-font-weight: bold;" text="COURSE">
+                     <font>
+                        <Font size="35.0" />
+                     </font>
+                  </Label>
+               </children>
+            </AnchorPane>
+         </items>
+      </SplitPane>
+   </center>
+</BorderPane>
